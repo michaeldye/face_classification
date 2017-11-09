@@ -40,12 +40,13 @@ class FaceEmotionClient(object):
         print("On Connected function!")
 
     @staticmethod
-    def publish_emotion(emotion_code, emotion_text):
+    def publish_emotion(emotion_code, emotion_text, emotion_probability):
         print("publishing emotion with code '" + str(emotion_code) + "' and text '" + emotion_text + "'")
         emotion = Thing()
         emotion.category = ThingCategory.PERCEPTION
         emotion.set_type("IThing")
-        data = {'m_Text': emotion_text, 'ecode': str(emotion_code), 'time': str(int(round(time.time() * 1000)))}
+        data = {'m_Text': emotion_text, 'ecode': str(emotion_code), 'eprob': str(emotion_probability),
+                'time': str(int(round(time.time() * 1000)))}
         emotion.data = data
         emotion.data_type = "FaceEmotion"
         print("thing: ", emotion.data)
@@ -124,7 +125,7 @@ def inference(topic, args):
     emotion_window = []
 
     # starting video streaming
-    cv2.namedWindow('window_frame')
+    cv2.namedWindow('emotion_inference')
 
     source = args.input[1]
     if args.input[0] == 'camera':
@@ -161,10 +162,10 @@ def inference(topic, args):
                 emotion_mode = mode(emotion_window)
             except:
                 continue
-            print("emotion is " + emotion_text)
+            print("emotion is " + emotion_text + " , with probability " + str(emotion_probability))
 
             if args.intu:
-                FaceEmotionClient.publish_emotion(emotion_label_arg, emotion_text)
+                FaceEmotionClient.publish_emotion(emotion_label_arg, emotion_text, emotion_probability)
             if emotion_text == 'angry':
                 color = emotion_probability * np.asarray((255, 0, 0))
             elif emotion_text == 'sad':
@@ -184,7 +185,7 @@ def inference(topic, args):
                       color, 0, -45, 1, 1)
 
         bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-        cv2.imshow('window_frame', bgr_image)
+        cv2.imshow('emotion_inference', bgr_image)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
