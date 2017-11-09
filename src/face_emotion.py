@@ -125,7 +125,12 @@ def inference(topic, args):
 
     # starting video streaming
     cv2.namedWindow('window_frame')
-    video_capture = cv2.VideoCapture(0)
+
+    source = args.input[1]
+    if args.input[0] == 'camera':
+        source = int(source)
+
+    video_capture = cv2.VideoCapture(source)
     while True:
         bgr_image = video_capture.read()[1]
         gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
@@ -194,7 +199,7 @@ def parse_config(argv, config_file):
     parser.add_argument('-c', '--configuration', help='configuration file', default=config_file)
     parser.add_argument('-intu', help='connects to intu instance',
                         action='store_true')
-    #parser.add_argument("input", nargs=2)
+    parser.add_argument("input", nargs=2)
     args = parser.parse_args()
     # reading the configuration file
     config = configparser.ConfigParser()
@@ -213,6 +218,15 @@ def parse_config(argv, config_file):
     else:
         print("working standalone")
 
+    inputs = ['camera', 'file', 'stream']
+
+    if args.input[0] in inputs:
+        print("supported input source: ", args.input[0])
+    else:
+        print("unsupported input source: ", args.input[0])
+        print("exiting")
+        exit(2)
+
     return config, args
 
 
@@ -222,8 +236,8 @@ def print_config(config, args):
     print("====================================================")
     print("host is " + config.get("intu", "host"))
     print("====================================================")
-    #print("input: " + args.input[0])
-    #print("source: " + args.input[1])
+    print("input: " + args.input[0])
+    print("source: " + args.input[1])
     print("====================================================")
 
 
