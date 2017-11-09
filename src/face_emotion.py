@@ -11,18 +11,18 @@ import time
 
 from self.topics.topic_client import TopicClient
 
-from statistics import mode
-import cv2
-from keras.models import load_model
-import numpy as np
+# from statistics import mode
+# import cv2
+# from keras.models import load_model
+# import numpy as np
 
-from utils.datasets import get_labels
-from utils.inference import detect_faces
-from utils.inference import draw_text
-from utils.inference import draw_bounding_box
-from utils.inference import apply_offsets
-from utils.inference import load_detection_model
-from utils.preprocessor import preprocess_input
+# from utils.datasets import get_labels
+# from utils.inference import detect_faces
+# from utils.inference import draw_text
+# from utils.inference import draw_bounding_box
+# from utils.inference import apply_offsets
+# from utils.inference import load_detection_model
+# from utils.preprocessor import preprocess_input
 
 from self.blackboard.blackboard import Blackboard
 from self.blackboard.thing import Thing
@@ -51,7 +51,6 @@ class FaceEmotionClient(object):
         print("thing: ", emotion.data)
         Blackboard.get_instance().add_thing(emotion, "")
 
-
     def run(self, config):
         try:
             self_id = str(uuid.uuid4())
@@ -66,18 +65,38 @@ class FaceEmotionClient(object):
         except KeyboardInterrupt:
             exit()
         except ConnectionRefusedError as ex:
-            print("error is : \n", ex)
+            print("connection error is: \n", ex)
+            print("exiting...\n")
+            exit()
+
 
 def main(argv):
     config_file = "face_emotion.cfg"
     config, args = parse_config(argv, config_file)
     print_config(config, args)
-    fc = FaceEmotionClient()
-    topic = fc.run(config)
-    inference(topic, args)
+    # connects to intu if the param is specified
+    if args.intu:
+        fc = FaceEmotionClient()
+        topic = fc.run(config)
+        inference(topic, args)
+    else:
+        inference(None, args)
 
 
 def inference(topic, args):
+    from statistics import mode
+    import cv2
+    from keras.models import load_model
+    import numpy as np
+
+    from utils.datasets import get_labels
+    from utils.inference import detect_faces
+    from utils.inference import draw_text
+    from utils.inference import draw_bounding_box
+    from utils.inference import apply_offsets
+    from utils.inference import load_detection_model
+    from utils.preprocessor import preprocess_input
+
     print("inference")
 
     if args.intu:
@@ -164,16 +183,17 @@ def inference(topic, args):
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        if not topic.is_connected:
+        if args.intu and (not topic.is_connected):
+            print("disconnected from intu, exiting...")
             break
 
 
 def parse_config(argv, config_file):
     # command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--configuration", help="configuration file", default=config_file)
-    parser.add_argument("--intu", help="connects to intu instance",
-                        action="store_true")
+    parser.add_argument('-c', '--configuration', help='configuration file', default=config_file)
+    parser.add_argument('-intu', help='connects to intu instance',
+                        action='store_true')
     #parser.add_argument("input", nargs=2)
     args = parser.parse_args()
     # reading the configuration file
