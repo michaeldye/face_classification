@@ -10,31 +10,12 @@ import uuid
 import time
 
 from self.topics.topic_client import TopicClient
-
-# from statistics import mode
-# import cv2
-# from keras.models import load_model
-# import numpy as np
-
-# from utils.datasets import get_labels
-# from utils.inference import detect_faces
-# from utils.inference import draw_text
-# from utils.inference import draw_bounding_box
-# from utils.inference import apply_offsets
-# from utils.inference import load_detection_model
-# from utils.preprocessor import preprocess_input
-
 from self.blackboard.blackboard import Blackboard
 from self.blackboard.thing import Thing
 from self.blackboard.thing import ThingCategory
 
 
 class FaceEmotionClient(object):
-
-    _agent = None
-
-    def get_agent(self):
-        return FaceEmotionClient._agent
 
     def on_connected(self):
         print("On Connected function!")
@@ -60,7 +41,6 @@ class FaceEmotionClient(object):
             TopicClient.get_instance().setHeaders(self_id, config.get("intu", "token"))
             TopicClient.get_instance().set_callback(self.on_connected)
             topic.reactor.connect()
-            #topic.start()
             return topic
 
         except KeyboardInterrupt:
@@ -106,9 +86,7 @@ def inference(topic, args, config):
         print("inference(): working standalone")
 
     # parameters for loading data and images
-    #detection_model_path = '../trained_models/detection_models/haarcascade_frontalface_default.xml'
     detection_model_path = config.get("model", "detection")
-    #emotion_model_path = '../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
     emotion_model_path = config.get("model", "emotion")
     emotion_labels = get_labels('fer2013')
 
