@@ -55,9 +55,9 @@ class FaceEmotionClient(object):
     def run(self, config):
         try:
             self_id = str(uuid.uuid4())
-            headers = [('selfId', self_id), ('token', '')]
-            topic = TopicClient.start_instance('127.0.0.1', 9443, headers)
-            TopicClient.get_instance().setHeaders(self_id, "")
+            headers = [('selfId', self_id), ('token', config.get("intu", "token"))]
+            topic = TopicClient.start_instance(config.get("intu", "host"), int(config.get("intu", "port")), headers)
+            TopicClient.get_instance().setHeaders(self_id, config.get("intu", "token"))
             TopicClient.get_instance().set_callback(self.on_connected)
             topic.reactor.connect()
             #topic.start()
@@ -79,12 +79,12 @@ def main(argv):
     if args.intu:
         fc = FaceEmotionClient()
         topic = fc.run(config)
-        inference(topic, args)
+        inference(topic, args, config)
     else:
-        inference(None, args)
+        inference(None, args, config)
 
 
-def inference(topic, args):
+def inference(topic, args, config):
     from statistics import mode
     import cv2
     from keras.models import load_model
@@ -106,8 +106,10 @@ def inference(topic, args):
         print("inference(): working standalone")
 
     # parameters for loading data and images
-    detection_model_path = '../trained_models/detection_models/haarcascade_frontalface_default.xml'
-    emotion_model_path = '../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
+    #detection_model_path = '../trained_models/detection_models/haarcascade_frontalface_default.xml'
+    detection_model_path = config.get("model", "detection")
+    #emotion_model_path = '../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
+    emotion_model_path = config.get("model", "emotion")
     emotion_labels = get_labels('fer2013')
 
     # hyper-parameters for bounding boxes shape
@@ -188,6 +190,7 @@ def inference(topic, args):
         cv2.imshow('emotion_inference', bgr_image)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            print("canceled with keyboard, exiting...")
             break
         if args.intu and (not topic.is_connected):
             print("disconnected from intu, exiting...")
@@ -236,6 +239,8 @@ def print_config(config, args):
     print("Running with the following configuration:")
     print("====================================================")
     print("host is " + config.get("intu", "host"))
+    print("port is " + config.get("intu", "port"))
+    print("token is " + config.get("intu", "token"))
     print("====================================================")
     print("input: " + args.input[0])
     print("source: " + args.input[1])
