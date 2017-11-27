@@ -223,6 +223,9 @@ def print_config(config, args):
     print("input: " + args.input[0])
     print("source: " + args.input[1])
     print("====================================================")
+    print("face detection model: " + config.get("model", "detection"))
+    print("face emotion model: " + config.get("model", "emotion"))
+
 
 
 if __name__ == "__main__":
