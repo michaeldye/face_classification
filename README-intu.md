@@ -37,6 +37,7 @@ The client is configured with the `face_emotion.cfg` file:
 host = 127.0.0.1
 port = 9443
 token =
+timeout = 120
 
 [model]
 
@@ -44,6 +45,7 @@ detection = ../trained_models/detection_models/haarcascade_frontalface_default.x
 emotion = ../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5
 ```
 
+`timeout`, seconds - a period of time when the client retries to connect to the intu instance every 10 seconds.
 ### Data
 
 The emotion data sending in the following JSON format:
