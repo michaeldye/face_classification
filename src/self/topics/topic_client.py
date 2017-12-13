@@ -55,6 +55,9 @@ class TopicClient:
     @classmethod
     def start_instance(cls, host, port, data):
         ''' Return the Singleton TopicClient '''
+        if cls.__instance is not None:
+            cls.__instance = None
+
         if cls.__instance is None:
             print("TopicClient Instantiated!")
             cls.__instance = TopicClient(host, port, data)

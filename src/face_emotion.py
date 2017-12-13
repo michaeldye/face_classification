@@ -8,6 +8,7 @@ import argparse
 import configparser
 import uuid
 import time
+import math
 
 from self.topics.topic_client import TopicClient
 from self.blackboard.blackboard import Blackboard
@@ -34,22 +35,39 @@ class FaceEmotionClient(object):
         Blackboard.get_instance().add_thing(emotion, "")
 
     def run(self, config):
-        try:
+
+        start_time = time.time()
+        end_time = start_time + float(config.get("intu", "timeout"))
+        print("starting time is ", start_time)
+        print("end time is ", end_time)
+
+        while not math.isclose(end_time, time.time(), abs_tol=0.00001):
             self_id = str(uuid.uuid4())
             headers = [('selfId', self_id), ('token', config.get("intu", "token"))]
-            topic = TopicClient.start_instance(config.get("intu", "host"), int(config.get("intu", "port")), headers)
-            TopicClient.get_instance().setHeaders(self_id, config.get("intu", "token"))
-            TopicClient.get_instance().set_callback(self.on_connected)
-            topic.reactor.connect()
-            return topic
+            topic = None
+            try:
 
-        except KeyboardInterrupt:
-            exit()
-        except ConnectionRefusedError as ex:
-            print("connection error is: \n", ex)
-            print("exiting...\n")
-            exit()
+                topic = TopicClient.start_instance(config.get("intu", "host"), int(config.get("intu", "port")), headers)
+                TopicClient.get_instance().setHeaders(self_id, config.get("intu", "token"))
+                TopicClient.get_instance().set_callback(self.on_connected)
+                print("trying to connect...")
+                topic.reactor.connect()
+                return topic
 
+            except KeyboardInterrupt:
+                exit()
+            except ConnectionRefusedError as ex:
+                print("connection error is: \n", ex)
+                print("will retry in 10 seconds...")
+                topic.reactor.close_connection()
+                topic = None
+                # sleep before the next attempt
+                time.sleep(10)
+                continue
+
+        print("intu connection timeout, exiting...")
+        # should exit here, since it's timeouted
+        exit()
 
 def main(argv):
     config_file = "face_emotion.cfg"
@@ -219,6 +237,7 @@ def print_config(config, args):
     print("host is " + config.get("intu", "host"))
     print("port is " + config.get("intu", "port"))
     print("token is " + config.get("intu", "token"))
+    print("connection timeout is " + config.get("intu", "timeout"), "sec")
     print("====================================================")
     print("input: " + args.input[0])
     print("source: " + args.input[1])
