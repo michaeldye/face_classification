@@ -41,7 +41,7 @@ class FaceEmotionClient(object):
         print("starting time is ", start_time)
         print("end time is ", end_time)
 
-        while not math.isclose(end_time, time.time(), abs_tol=0.00001):
+        while not math.isclose(end_time, time.time(), abs_tol=5):
             self_id = str(uuid.uuid4())
             headers = [('selfId', self_id), ('token', config.get("intu", "token"))]
             topic = None
@@ -108,6 +108,10 @@ def inference(topic, args, config):
     emotion_model_path = config.get("model", "emotion")
     emotion_labels = get_labels('fer2013')
 
+    # timeout for video source access
+    timeout = float(config.get("intu", "video_timeout"))
+    end_time = time.time() + timeout
+
     # hyper-parameters for bounding boxes shape
     frame_window = 10
     emotion_offsets = (20, 40)
@@ -131,7 +135,21 @@ def inference(topic, args, config):
 
     video_capture = cv2.VideoCapture(source)
     while True:
-        bgr_image = video_capture.read()[1]
+        ret, bgr_image = video_capture.read()
+        print("inference: video_capture.read() ret is ", ret)
+        while not ret:
+            print("inference: error occurred")
+            print("end_time is ", end_time)
+            print("the current time is", time.time())
+            if math.isclose(end_time, time.time(), abs_tol=5.0):
+                print("video stream access timeout, exiting...")
+                exit()
+            else:
+                print("waiting 10 seconds for the next try, delta ", end_time - time.time())
+                time.sleep(10)
+                ret, bgr_image = video_capture.read()
+
+        end_time = time.time() + 20
         gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
         rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
         faces = detect_faces(face_detection, gray_image)

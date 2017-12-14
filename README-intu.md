@@ -38,6 +38,7 @@ host = 127.0.0.1
 port = 9443
 token =
 timeout = 120
+video_timeout = 60
 
 [model]
 
@@ -46,6 +47,8 @@ emotion = ../trained_models/emotion_models/fer2013_mini_XCEPTION.102-0.66.hdf5
 ```
 
 `timeout`, seconds - a period of time when the client retries to connect to the intu instance every 10 seconds.
+`video_timeout`, seconds - a period of time when the client retries to read from a video device every 10 seconds.
+
 ### Data
 
 The emotion data sending in the following JSON format:
