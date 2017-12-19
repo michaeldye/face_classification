@@ -56,7 +56,7 @@ class FaceEmotionClient(object):
 
             except KeyboardInterrupt:
                 exit()
-            except ConnectionRefusedError as ex:
+            except (ConnectionRefusedError, TimeoutError) as ex:
                 print("connection error is: \n", ex)
                 print("will retry in 10 seconds...")
                 topic.reactor.close_connection()
@@ -256,6 +256,7 @@ def print_config(config, args):
     print("port is " + config.get("intu", "port"))
     print("token is " + config.get("intu", "token"))
     print("connection timeout is " + config.get("intu", "timeout"), "sec")
+    print("video timeout is " + config.get("intu", "video_timeout"), "sec")
     print("====================================================")
     print("input: " + args.input[0])
     print("source: " + args.input[1])
