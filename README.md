@@ -19,22 +19,22 @@ The face classification experiment uses IBM-provided Horizon services to publish
 
 * Install Python virtualenv packages as root:
 
-    sudo su -
-    apt update && apt install -y virtualenvwrapper virtualenv
-    exit
+      sudo su -
+      apt update && apt install -y virtualenvwrapper virtualenv
+      exit
 
 * End your terminal session (whether remote or local) as user `nvidia`:
 
-    exit
+      exit
 
 * Create a Python virtual environment:
 
-    mkvirtualenv -p /usr/bin/python3 /home/nvidia/face_classification/venv
+      mkvirtualenv -p /usr/bin/python3 /home/nvidia/face_classification/venv
 
 * Enter the virtual environment and install dependencies (note that this operation will take about 30mins to complete):
 
-    cd /home/nvidia/face_classification && workon venv
-    cd python && pip install -r ./requirements-arm64.txt
+      cd /home/nvidia/face_classification && workon venv
+      cd python && pip install -r ./requirements-$(dpkg --print-architecture).txt
 
 ### Executing the Experiment
 
@@ -42,14 +42,14 @@ It is assumed that you've already installed the native component of this experim
 
 * If you haven't aready, enter the virtual environment:
 
-    cd /home/nvidia/face_classification && workon venv
+      cd /home/nvidia/face_classification && workon venv
 
 * Start the emotion classification process:
 
-    python ./src/face_emotion.py -c ./src/face_emotion.cfg camera 0
+      python ./src/face_emotion.py -c ./src/face_emotion.cfg camera 0
 
 * Setup the TX2 as a Horizon node and configure it to execute a face_classification pattern:
 
-    [TODO]
+      [TODO]
 
 Once the container pattern is executing on the TX2, serialized data from the emotion classification (native) process is transmitted to your IBM Cloud services for analytics. You can browse to... [TODO]
