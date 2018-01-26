@@ -1,5 +1,8 @@
 FROM openhorizon/aarch64-tx2-face-classification-intu:JetPack3.2-RC
 
+# check out the modified source w/ mqtt and cloudant publisher
+RUN git clone https://github.com/michaeldye/face_classification.git /src
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
 				xvfb \
 				xauth \
